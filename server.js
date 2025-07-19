@@ -122,7 +122,7 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Default device configuration
-const getDefaultConfig = (deviceId) => ({
+const getDefaultConfig = (deviceId, req = null) => ({
   deviceId,
   segmentLengthSeconds: 120,
   preEventSeconds: 10,
@@ -131,7 +131,7 @@ const getDefaultConfig = (deviceId) => ({
   snapshotIntervalMinutes: 5,
   audioRecordingEnabled: true,
   collisionSensitivity: 5,
-  serverBaseUrl: process.env.SERVER_BASE_URL || `https://${req.get('host')}`,
+  serverBaseUrl: process.env.SERVER_BASE_URL || (req ? `https://${req.get('host')}` : 'https://dashcam-backend-server.onrender.com'),
   authToken: "will-be-replaced-by-jwt",
   networkThrottleConfig: {
     enabled: true,
@@ -250,7 +250,7 @@ app.post('/api/v1/auth/token', (req, res) => {
 
     // Create default configuration if not exists
     if (!configurations.has(deviceId)) {
-      configurations.set(deviceId, getDefaultConfig(deviceId));
+      configurations.set(deviceId, getDefaultConfig(deviceId, req));
     }
 
     const accessToken = jwt.sign(
@@ -355,7 +355,7 @@ app.post('/api/v1/auth/refresh', (req, res) => {
 app.get('/api/v1/config', authenticateToken, (req, res) => {
   try {
     const deviceId = req.device.sub;
-    const config = configurations.get(deviceId) || getDefaultConfig(deviceId);
+    const config = configurations.get(deviceId) || getDefaultConfig(deviceId, req);
 
     res.json({
       success: true,
@@ -397,7 +397,7 @@ app.put('/api/v1/config', authenticateToken, (req, res) => {
     }
 
     // Merge with existing configuration
-    const existingConfig = configurations.get(deviceId) || getDefaultConfig(deviceId);
+    const existingConfig = configurations.get(deviceId) || getDefaultConfig(deviceId, req);
     const updatedConfig = { ...existingConfig, ...deviceConfig };
     configurations.set(deviceId, updatedConfig);
 
