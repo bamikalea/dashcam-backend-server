@@ -198,18 +198,18 @@ app.get('/', (req, res) => {
     environment: NODE_ENV,
     endpoints: {
       health: '/health',
-      auth: '/auth/login',
-      config: '/config',
-      heartbeat: '/heartbeat',
-      mediaUpload: '/media/upload',
-      events: '/events',
+      auth: '/api/v1/auth/token',
+      config: '/api/v1/config',
+      heartbeat: '/api/v1/heartbeat',
+      mediaUpload: '/api/v1/media/upload',
+      events: '/api/v1/events',
       dashboard: '/dashboard'
     }
   });
 });
 
 // Authentication endpoints
-app.post('/auth/login', (req, res) => {
+app.post('/api/v1/auth/token', (req, res) => {
   try {
     const { deviceId, deviceSecret, deviceInfo } = req.body;
 
@@ -290,7 +290,7 @@ app.post('/auth/login', (req, res) => {
   }
 });
 
-app.post('/auth/refresh', (req, res) => {
+app.post('/api/v1/auth/refresh', (req, res) => {
   try {
     const { refreshToken } = req.body;
 
@@ -352,7 +352,7 @@ app.post('/auth/refresh', (req, res) => {
 });
 
 // Configuration endpoints
-app.get('/config', authenticateToken, (req, res) => {
+app.get('/api/v1/config', authenticateToken, (req, res) => {
   try {
     const deviceId = req.device.sub;
     const config = configurations.get(deviceId) || getDefaultConfig(deviceId);
@@ -380,7 +380,7 @@ app.get('/config', authenticateToken, (req, res) => {
   }
 });
 
-app.put('/config', authenticateToken, (req, res) => {
+app.put('/api/v1/config', authenticateToken, (req, res) => {
   try {
     const deviceId = req.device.sub;
     const { deviceConfig } = req.body;
@@ -422,7 +422,7 @@ app.put('/config', authenticateToken, (req, res) => {
 });
 
 // Heartbeat endpoint
-app.post('/heartbeat', authenticateToken, (req, res) => {
+app.post('/api/v1/heartbeat', authenticateToken, (req, res) => {
   try {
     const deviceId = req.device.sub;
     const { timestamp, location, deviceStatus, performanceMetrics } = req.body;
@@ -482,7 +482,7 @@ app.post('/heartbeat', authenticateToken, (req, res) => {
 });
 
 // Media upload endpoint
-app.post('/media/upload', authenticateToken, upload.single('file'), (req, res) => {
+app.post('/api/v1/media/upload', authenticateToken, upload.single('file'), (req, res) => {
   try {
     const deviceId = req.device.sub;
     const file = req.file;
@@ -554,7 +554,7 @@ app.post('/media/upload', authenticateToken, upload.single('file'), (req, res) =
 });
 
 // Media file status
-app.get('/media/upload/status/:fileId', authenticateToken, (req, res) => {
+app.get('/api/v1/media/upload/status/:fileId', authenticateToken, (req, res) => {
   try {
     const { fileId } = req.params;
     const mediaFile = mediaFiles.get(fileId);
@@ -597,7 +597,7 @@ app.get('/media/upload/status/:fileId', authenticateToken, (req, res) => {
 });
 
 // Event reporting endpoint
-app.post('/events', authenticateToken, (req, res) => {
+app.post('/api/v1/events', authenticateToken, (req, res) => {
   try {
     const deviceId = req.device.sub;
     const eventData = req.body;
@@ -662,7 +662,7 @@ app.post('/events', authenticateToken, (req, res) => {
 });
 
 // Command endpoints
-app.post('/commands/:deviceId', authenticateToken, (req, res) => {
+app.post('/api/v1/commands/:deviceId', authenticateToken, (req, res) => {
   try {
     const { deviceId } = req.params;
     const { commandType, parameters, priority = 'normal', timeout = 30 } = req.body;
@@ -717,7 +717,7 @@ app.post('/commands/:deviceId', authenticateToken, (req, res) => {
   }
 });
 
-app.get('/commands/:commandId/status', authenticateToken, (req, res) => {
+app.get('/api/v1/commands/:commandId/status', authenticateToken, (req, res) => {
   try {
     const { commandId } = req.params;
     const command = commands.get(commandId);
@@ -914,11 +914,11 @@ app.use((req, res) => {
     },
     availableEndpoints: {
       health: '/health',
-      auth: '/auth/login',
-      config: '/config',
-      heartbeat: '/heartbeat',
-      mediaUpload: '/media/upload',
-      events: '/events',
+      auth: '/api/v1/auth/token',
+      config: '/api/v1/config',
+      heartbeat: '/api/v1/heartbeat',
+      mediaUpload: '/api/v1/media/upload',
+      events: '/api/v1/events',
       dashboard: '/dashboard'
     },
     timestamp: new Date().toISOString()
@@ -947,11 +947,11 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log('  Device Secret: test-secret');
   console.log('');
   console.log('📡 API Endpoints:');
-  console.log('  POST /auth/login - Device authentication');
-  console.log('  GET  /config - Get device configuration');
-  console.log('  POST /heartbeat - Send heartbeat');
-  console.log('  POST /media/upload - Upload media files');
-  console.log('  POST /events - Report events');
+  console.log('  POST /api/v1/auth/token - Device authentication');
+  console.log('  GET  /api/v1/config - Get device configuration');
+  console.log('  POST /api/v1/heartbeat - Send heartbeat');
+  console.log('  POST /api/v1/media/upload - Upload media files');
+  console.log('  POST /api/v1/events - Report events');
   console.log('  GET  /dashboard - Server dashboard');
   console.log('');
   console.log('🚀 Server ready for connections!');
