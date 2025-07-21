@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashcam Server Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header">
+        <h1>🚗 Dashcam Server Dashboard</h1>
+        <p>Real-time monitoring of connected devices and data</p>
+    </div>
+
+    <div class="container">
+        <div class="controls">
+            <label>
+                <input type="checkbox" id="autoRefresh" checked> Auto-refresh (5s)
+            </label>
+            <button class="refresh-btn" onclick="refreshData()">Refresh Now</button>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <!-- Stats will be loaded here -->
+            <div class="stat-card">
+                <div class="stat-number">-</div>
+                <div class="stat-label">Total Devices</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">-</div>
+                <div class="stat-label">Online Devices</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">-</div>
+                <div class="stat-label">Total Events</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">-</div>
+                <div class="stat-label">Media Files</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">-</div>
+                <div class="stat-label">Server Uptime</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">-</div>
+                <div class="stat-label">Memory Usage</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="devices">Devices</button>
+            <button class="tab-btn" data-tab="events">Events</button>
+            <button class="tab-btn" data-tab="media">Media Files</button>
+            <button class="tab-btn" data-tab="logs">Server Logs</button>
+            <button class="tab-btn" data-tab="requests">API Requests</button>
+            <button class="tab-btn" data-tab="commands">Send Commands</button>
+        </div>
+
+        <div class="tab-content">
+            <div id="devices" class="tab-pane active">
+                <h2>Connected Devices</h2>
+                <div id="devicesTable" class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Device ID</th>
+                                <th>Status</th>
+                                <th>Last Seen</th>
+                                <th>IP Address</th>
+                                <th>Registration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="5" class="loading-text">Loading devices...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="events" class="tab-pane">
+                <h2>Recent Events</h2>
+                <div id="eventsTable" class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event Type</th>
+                                <th>Device</th>
+                                <th>Severity</th>
+                                <th>Timestamp</th>
+                                <th>Location</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="5" class="loading-text">Loading events...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="media" class="tab-pane">
+                <h2>Media Files</h2>
+                <div id="mediaTable" class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Device</th>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Uploaded</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="loading-text">Loading media files...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="logs" class="tab-pane">
+                <h2>Server Logs</h2>
+                <div id="serverLogs" class="logs-container">
+                    <div class="log-entry">
+                        <span class="log-timestamp">[System]</span>
+                        Dashboard initialized - monitoring server activity
+                    </div>
+                </div>
+            </div>
+
+            <div id="requests" class="tab-pane">
+                <h2>API Requests</h2>
+                <div class="request-monitor">
+                    <div class="request-controls">
+                        <button id="clearRequests" class="clear-btn">Clear All</button>
+                    </div>
+                    <div id="requestList" class="request-list">
+                        <div class="empty-state">No requests captured yet</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="commands" class="tab-pane">
+                <h2>Send Commands to Devices</h2>
+                <div class="command-panel">
+                    <div class="device-selector">
+                        <h3>1. Select Device</h3>
+                        <select id="deviceSelector">
+                            <option value="">-- Select a device --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="command-type">
+                        <h3>2. Select Command Type</h3>
+                        <select id="commandType">
+                            <option value="">-- Select command type --</option>
+                            <option value="take_snapshot">Take Snapshot</option>
+                            <option value="start_recording">Start Recording</option>
+                            <option value="stop_recording">Stop Recording</option>
+                            <option value="upload_logs">Upload Logs</option>
+                            <option value="restart_app">Restart App</option>
+                            <option value="update_config">Update Configuration</option>
+                            <option value="custom">Custom Command</option>
+                        </select>
+                    </div>
+                    
+                    <div class="command-params">
+                        <h3>3. Command Parameters</h3>
+                        <div id="paramFields">
+                            <p class="placeholder-text">Select a command type to configure parameters</p>
+                        </div>
+                    </div>
+                    
+                    <div class="command-execute">
+                        <h3>4. Execute Command</h3>
+                        <div class="command-priority">
+                            <label>Priority:</label>
+                            <select id="commandPriority">
+                                <option value="normal">Normal</option>
+                                <option value="high">High</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        <button id="sendCommand" class="send-command-btn" disabled>Send Command</button>
+                    </div>
+                </div>
+                
+                <div class="command-history">
+                    <h3>Command History</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Command ID</th>
+                                    <th>Device</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="commandHistoryTable">
+                                <tr>
+                                    <td colspan="6" class="loading-text">No commands sent yet</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="timestamp" id="lastUpdate">
+            Last updated: Never
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+    <script src="commands.js"></script>
+</body>
+</html>

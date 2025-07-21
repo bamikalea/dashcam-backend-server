@@ -75,6 +75,20 @@ const events = new Map();
 const commands = new Map();
 const configurations = new Map();
 
+// Store recent requests for monitoring
+const recentRequests = [];
+
+// API endpoint for recent requests
+app.get('/dashboard/requests', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      requests: recentRequests.slice(0, 50)
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Request logging middleware
 app.use((req, res, next) => {
   const timestamp = new Date().toISOString();
@@ -86,6 +100,30 @@ app.use((req, res, next) => {
   }
   
   console.log(`${timestamp} - ${req.method} ${req.path} - ${req.ip}`);
+  next();
+});
+
+// Request monitoring middleware
+app.use((req, res, next) => {
+  // Skip static files and dashboard endpoints
+  if (!req.path.startsWith('/static') && !req.path.startsWith('/dashboard') && req.path !== '/') {
+    const requestData = {
+      method: req.method,
+      path: req.path,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date().toISOString(),
+      body: req.body && Object.keys(req.body).length > 0 ? req.body : null,
+      query: req.query && Object.keys(req.query).length > 0 ? req.query : null
+    };
+    
+    recentRequests.unshift(requestData);
+    
+    // Keep only last 100 requests
+    if (recentRequests.length > 100) {
+      recentRequests.splice(100);
+    }
+  }
   next();
 });
 
@@ -206,6 +244,12 @@ app.get('/', (req, res) => {
       dashboard: '/dashboard'
     }
   });
+});
+
+// UI endpoint
+app.get('/ui', (req, res) => {
+  // Serve HTML dashboard
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Authentication endpoints
@@ -763,8 +807,18 @@ app.use('/uploads', express.static(uploadsDir, {
   etag: true
 }));
 
+// Serve static files for the web UI
+app.use('/static', express.static(path.join(__dirname, 'public')));
+app.use('/dashboard', express.static(path.join(__dirname, 'public')));
+
 // Dashboard endpoints for monitoring
 app.get('/dashboard', (req, res) => {
+  // Redirect to UI
+  res.redirect('/ui');
+});
+
+// Dashboard API endpoint
+app.get('/dashboard/api', (req, res) => {
   res.json({
     success: true,
     data: {
@@ -940,7 +994,7 @@ process.on('SIGINT', () => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚗 Dashcam Backend Server running on port ${PORT}`);
   console.log(`🌍 Environment: ${NODE_ENV}`);
-  console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
+  console.log(`📊 Dashboard: http://localhost:${PORT}/ui`);
   console.log(`🔧 Health check: http://localhost:${PORT}/health`);
   console.log('');
   console.log('🔐 Authentication:');
